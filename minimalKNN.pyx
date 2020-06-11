@@ -43,7 +43,16 @@ cdef extern from *:
   pass
 
 
-def simple_solver_test():
+def construct_kNN(ndarray pool, int graph_size = 10):
+  cdef vertices V
+  for v in pool: V.push_back(vertex(v[0], v[1], v[2]))
+  cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
+  cdef graph g = pkNN.neighbor_graph(1)
+  return [(e.u,e.v) for e in g]
+
+
+def simple_solver_test(int n_size=200, int n_neighbor=1,
+                       int graph_size=10):
   ''' Functional test with a simple situation.
 
   Put `group` line segments composed of `frame` elementary segments in the
@@ -66,6 +75,21 @@ def simple_solver_test():
   '''
   from datetime import datetime
   t0 = datetime.now()
+  cdef vertices V
+  obj = np.random.uniform(-1,1,size=(n_size,3))
+  for v in obj: V.push_back(vertex(v[0], v[1], v[2]))
+  cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
+  cdef graph g = pkNN.neighbor_graph(n_neighbor)
   t1 = datetime.now()
-  print('# found {} segments'.format(0))
+  print('# found {} segments'.format(g.size()))
   print('# elapsed time: {}ms'.format((t1-t0).total_seconds()*1e3))
+
+  import matplotlib.pyplot as plt
+  from mpl_toolkits.mplot3d import Axes3D
+  from mpl_toolkits.mplot3d.art3d import Line3DCollection as lc
+  fig = plt.figure()
+  ax  = fig.add_subplot(111, projection='3d')
+  ax.scatter(obj[:,0],obj[:,1],obj[:,2])
+  edges = lc([(obj[e.u,:],obj[e.v,:]) for e in g], color=(1,0,0,0.5))
+  ax.add_collection(edges)
+  plt.show()
