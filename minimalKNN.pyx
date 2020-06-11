@@ -1,6 +1,7 @@
 #!/usr/bin/env cython
 # -*- coding: utf-8 -*-
 from libcpp.vector cimport vector as vec
+from libcpp.set cimport set as cset
 from libcpp.list cimport list as clist
 from numpy cimport ndarray
 import numpy as np
@@ -8,14 +9,34 @@ import numpy as np
 
 cdef extern from 'minimalKNN.h' namespace 'minimalKNN':
 
-  ctypedef long node_t
-  ctypedef vec[node_t] node_list
-  ctypedef double cost_t
+  ## a three-dimensional vertex.
   ctypedef struct vertex:
     double x
     double y
     double z
+  ## a list of three-dimensional vertices.
   ctypedef vec[vertex] vertices
+
+  ## a unique sequential number of a vertex.
+  ctypedef long node_t
+  ## a list of node numbers.
+  ctypedef vec[node_t] node_list
+
+  ## a edge specified by a pair of node numbers.
+  ctypedef struct edge:
+    node_t u
+    node_t v
+  ## a unique set of edges.
+  ctypedef cset[edge] graph
+
+  ## k-NN builder
+  cdef cppclass kNNBuilder:
+    ##kNNBuilder()
+    kNNBuilder(const vertices, const int)
+    const void print_vertices() const
+    const void print_nng(const int) const
+    const vertices get_vertices() const
+    const graph neighbor_graph(const int) const
 
 
 cdef extern from *:
