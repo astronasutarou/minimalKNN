@@ -19,69 +19,111 @@
 namespace minimalKNN {
   constexpr bool __debug__ = true;
 
+  /** a container to store k-Nearest Neigbors. */
   class kNNSet;
+  /** a constructor of k-Nearest Neighbor Graph. */
   class kNNBuilder;
 
-  typedef long node_t;
-  typedef std::vector<node_t> node_list;
+  /** a vertex in a three-dimensional Euclidean space. */
+  typedef struct vertex {
+    double x;
+    double y;
+    double z;
+  } vertex;
+  /** a list of three-dimensional vertices. */
+  typedef std::vector<vertex> vertices;
 
-  typedef double cost_t;
+  /** a distance between two vertices. */
+  typedef double distance_t;
+
+  /** a unique sequential number of a vertex. */
+  typedef long node_t;
+  /** a list of node numbers.  */
+  typedef std::vector<node_t> node_list;
+  /** a node with the distance. */
   typedef struct rated_node {
     node_t i;
-    cost_t cost;
+    distance_t distance;
     const bool operator<(const rated_node& rhs) const
-    { return cost < rhs.cost; }
+    { return distance < rhs.distance; }
     const bool operator==(const node_t& rhs) const
     { return i == rhs; }
     const bool operator==(const rated_node& rhs) const
     { return i == rhs.i; }
   } rated_node;
 
-  typedef struct vertex {
-    double x;
-    double y;
-    double z;
-  } vertex;
-  typedef std::vector<vertex> vertices;
-
+  /** a pair of vertices specified by node numbers. */
   typedef struct edge {
     node_t u;
     node_t v;
     const bool operator<(const edge& rhs) const
     { return (u==rhs.u)?v<rhs.v:u<rhs.u; }
   } edge;
+  /** a list of edges. */
   typedef std::vector<edge> edges;
+  /** a unique set of edges. */
   typedef std::set<edge> graph;
 
+  /** a container of a k-Nearest Neighbor Graph. */
   typedef std::vector<kNNSet> kNNGraph;
 
   class kNNSet {
   public:
+    /**
+     * @brief construct a _kNNSet_ without the size limitation.
+     */
     kNNSet()
       : kNNSet(std::numeric_limits<long>::max())
     {}
 
+    /**
+     * @brief construct a _kNNSet_ with graph size of `k`.
+     * @param[in] k: the storage size of the internal graph.
+     */
     kNNSet(const size_t k)
-      : graph_size(k), max_cost(std::numeric_limits<double>::max())
+      : graph_size(k),
+        max_distance(std::numeric_limits<double>::max())
     {}
 
+    /**
+     * @brief a copy constructor of _kNNSet_.
+     * @param[in] obj: a _kNNSet_ object to be copied.
+     */
     kNNSet(const kNNSet& obj)
-      : graph_size(obj.graph_size), max_cost(obj.max_cost), B(obj.B)
+      : graph_size(obj.graph_size),
+        max_distance(obj.max_distance), B(obj.B)
     {}
 
+    /**
+     * @brief a move constructor of _kNNSet_.
+     * @param[in] obj: a temprary _kNNSet_ objet to be copied.
+     */
     kNNSet(kNNSet&& obj)
-      : graph_size(obj.graph_size), max_cost(obj.max_cost), B(std::move(obj.B))
+      : graph_size(obj.graph_size),
+        max_distance(obj.max_distance), B(std::move(obj.B))
     {}
 
+    /**
+     * @brief insert a node into a container with a distance.
+     * @param[in] node: the nubmber of the node to be inserted.
+     * @param[in] distance: the distance to the node to be inserted.
+     * @return true if a node is successfully inserted.
+     * @note When the container can accommodate a node, the node insertion
+     *       is always successful. If the distance to the node is larger
+     *       than the maximum distance of the stored nodes, the insertion
+     *       will fail. In case that the distance is exactly zero, which
+     *       means that the node is idential to that of this object, the
+     *       node is not inserted.
+     */
     bool
-    insert(const node_t& node, const cost_t& cost)
+    insert(const node_t& node, const distance_t& distance)
     {
-      if (cost == 0) return false;
-      if (cost < max_cost || B.size() < graph_size) {
-        if (B.find({node,cost})!=B.end()) return false;
-        B.insert(rated_node{node, cost});
+      if (distance == 0) return false;
+      if (distance < max_distance || B.size() < graph_size) {
+        if (B.find({node,distance})!=B.end()) return false;
+        B.insert(rated_node{node, distance});
         if (B.size() > graph_size) B.erase(prev(B.end()));
-        max_cost = prev(B.end())->cost;
+        max_distance = prev(B.end())->distance;
         return true;
       }
       else {
@@ -89,32 +131,53 @@ namespace minimalKNN {
       }
     }
 
+    /**
+     * @brief display the associated nodes and their distances.
+     */
     void
     print() const
     {
       for (const auto& e: B)
-        printf("[%2ld (%.2f)]", e.i, e.cost);
+        printf("[%2ld (%.2f)]", e.i, e.distance);
       printf("\n");
     }
 
+    /**
+     * @brief inquire for the node by the node number.
+     * @param[in] node: the node number.
+     * @return a forward iterator of the _kNNSet_ container.
+     * @note kNNSet.end() is returned if the requested node is absent.
+     */
     const std::set<rated_node>::const_iterator
     find(const node_t& node) const
     {
       return B.find(rated_node{node, 0.0});
     }
 
+    /**
+     * @brief an iterator to the beginning.
+     * @return an iterator to the beginning of the container.
+     */
     std::set<rated_node>::iterator
     begin() const
     {
       return B.begin();
     }
 
+    /**
+     * @brief an iterator to the end.
+     * @return an iterator to the end of the container.
+     */
     std::set<rated_node>::iterator
     end() const
     {
       return B.end();
     }
 
+    /**
+     * @brief return a list of the k-Nearest Neighbor nodes.
+     * @return a list of the neighbor nodes.
+     */
     const node_list
     neighbors() const
     {
@@ -124,62 +187,127 @@ namespace minimalKNN {
     }
 
   private:
-    const size_t graph_size;
-    double max_cost;
-    std::set<rated_node> B;
+    const size_t graph_size; /** the maximum size of the container. */
+    double max_distance;     /** an auxiliary maximum-distance variable. */
+    std::set<rated_node> B;  /** an internal container of nodes. */
   };
 
 
   class kNNBuilder {
   public:
+    /**
+     * @brief construct a _kNNBuilder_.
+     * @param[in] k: the maximum size of the node containers.
+     * @param[in] v: a list of the given vertices.
+     * @note The graph construction will fail when the `k` value is too small.
+     *       The `k` is conventionally set between 10--20.
+     */
     kNNBuilder(const size_t k, const vertices v)
       : n_vertices(v.size()), graph_size((k<n_vertices)?k:n_vertices), V(v)
     {
+      // Initialization Procedure
+      //   The k-NN graph is initialized with randomly selected nodes.
+      //   `std::shuffle` should be replaced with a more efficient algorithm.
       std::mt19937 gen;
       gen.seed(std::random_device{}());
-
-      // initialization procedure
       node_list r(n_vertices);
       std::iota(r.begin(), r.end(), 0);
       for (size_t i=0; i<n_vertices; i++) {
         kNNSet b(graph_size);
         std::shuffle(r.begin(), r.end(), gen);
         for (size_t j=0; j<graph_size; j++)
-          b.insert(r[j], calc_cost(i,r[j]));
+          b.insert(r[j], calc_distance(i,r[j]));
         Bk.push_back(b);
       }
 
+      // Optimization Loop
+      //   kNNBuilder will give up the optimization procedure after the
+      //   `max_iter` iterations. Currently, no exception is raised.
+      //   The k-NN graph remains at the last iteration. In usual cases,
+      //   the k-NN graph will converge within a few iterations.
+      constexpr size_t max_iter = 15;
       size_t updated(0);
-      for (size_t c=0; c<15; c++) {
+      for (size_t c=0; c<max_iter; c++) {
         kNNGraph Rk = reverse(Bk);
         kNNGraph Mk = merge(Bk, Rk);
         for (size_t i=0; i<n_vertices; i++) {
           for (auto& v: Mk[i]) {
             for (auto& u: Mk[v.i]) {
-              cost_t&& c = calc_cost(i, u.i);
-              updated += Bk[i].insert(u.i, c);
+              distance_t&& d = calc_distance(i, u.i);
+              updated += Bk[i].insert(u.i, d);
             }
           }
         }
-        printf("# %ld updates in iteration %ld.\n", updated, c);
-        if (updated==0) break;
+        if (__debug__)
+          printf("# %ld updates in iteration %ld.\n", updated, c);
+        if (updated==0) break; // leave the loop when converged.
         updated = 0;
       }
     }
 
 
+    /**
+     * @brief display the vertices.
+     */
     const void
-    show_vertices() const
+    print_vertices() const
     {
       for (size_t i=0; i<n_vertices; i++)
-        printf("%f %f %f\n", V[i].x, V[i].y, V[i].z);
+        printf("%8.4f %8.4f %8.4f\n", V[i].x, V[i].y, V[i].z);
     }
 
+    /**
+     * @brief display the k-Nearest Neighbor Graph.
+     * @note This displays a compressed representation of the k-NN graph.
+     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
+     *       The graph is non-directional. Every vertex should be connected
+     *       with `graph_size` edges.
+     */
     const void
-    neighbor_graph() const
-    { neighbor_graph(graph_size); }
+    print_nng() const
+    { print_nng(graph_size); }
 
+    /**
+     * @brief display the k-Nearest Neighbor Graph.
+     * @param[in] n_neibors: the number of edges per vertex.
+     * @note This displays a compressed representation of the k-NN graph.
+     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
+     *       The graph is non-directional. Every vertex should be connected
+     *       with `n_neibors` edges.
+     */
     const void
+    print_nng(const size_t n_neibors) const
+    {
+      graph G = neighbor_graph(n_neibors);
+      for (auto& g: G) {
+        printf("%8.4f %8.4f %8.4f  ", V[g.u].x, V[g.u].y, V[g.u].z);
+        printf("%8.4f %8.4f %8.4f\n", V[g.v].x, V[g.v].y, V[g.v].z);
+      }
+      printf("# graph size: %ld\n", G.size());
+    }
+
+    /**
+     * @brief construct the k-Nearest Neighbor Graph.
+     * @return A graph contains the k-Narest Neighbor Graph.
+     * @note This displays a compressed representation of the k-NN graph.
+     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
+     *       The graph is non-directional. Every vertex should be connected
+     *       with `graph_size` edges.
+     */
+    const graph
+    neighbor_graph() const
+    { return neighbor_graph(graph_size); }
+
+    /**
+     * @brief construct the k-Nearest Neighbor Graph.
+     * @param[in] n_neibors: the number of edges per vertex.
+     * @return A graph contains the k-Narest Neighbor Graph.
+     * @note This displays a compressed representation of the k-NN graph.
+     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
+     *       The graph is non-directional. Every vertex should be connected
+     *       with `n_neibors` edges.
+     */
+    const graph
     neighbor_graph(const size_t n_neibors) const
     {
       graph G;
@@ -193,63 +321,93 @@ namespace minimalKNN {
           if (N==n_neibors) break;
         }
       }
-      for (auto& g: G) {
-        printf("%f %f %f ",  V[g.u].x, V[g.u].y, V[g.u].z);
-        printf("%f %f %f\n", V[g.v].x, V[g.v].y, V[g.v].z);
-      }
-      printf("# graph size: %ld\n", G.size());
+      return G;
     }
 
   private:
+    /**
+     * @brief construct a reversed k-NN graph.
+     * @param[in] Gk: a k-NN graph to be reversed.
+     * @return a reversed k-NN graph.
+     * @note A k-NN graph `Gk[v]` contains the k-nearest neighbors from the
+     *       vertex `v`. The reversed k-NN graph `Rk[v]` contains the nodes
+     *       whose nearest neighbors contain the vertex `v`.
+     */
     const kNNGraph
-    reverse(kNNGraph& Bk) const
+    reverse(kNNGraph& Gk) const
     {
       kNNGraph Rk;
       for (size_t i=0; i<n_vertices; i++)
         Rk.push_back(kNNSet());
       for (size_t i=0; i<n_vertices; i++) {
-        for (auto& node: Bk[i]) {
-          Rk[node.i].insert(i, node.cost);
+        for (auto& node: Gk[i]) {
+          Rk[node.i].insert(i, node.distance);
         }
       }
       return Rk;
     }
 
 
+    /**
+     * @brief construct a merged k-NN graph.
+     * @param[in] Fk: a k-NN graph to be merged.
+     * @param[in] Gk: a k-NN graph to be merged.
+     * @return a merged k-NN graph.
+     * @note A merged k-NN graph `Mk[v]` contains the members of `Fk[v]` and
+     *       `Gk[v]` without duplication.
+     */
     const kNNGraph
-    merge(const kNNGraph& Bk, const kNNGraph& Rk) const
+    merge(const kNNGraph& Fk, const kNNGraph& Gk) const
     {
       kNNGraph Mk;
       for (size_t i=0; i<n_vertices; i++) {
         Mk.push_back(kNNSet());
-        for (auto& node: Bk[i]) Mk[i].insert(node.i, node.cost);
-        for (auto& node: Rk[i]) Mk[i].insert(node.i, node.cost);
+        for (auto& node: Fk[i]) Mk[i].insert(node.i, node.distance);
+        for (auto& node: Gk[i]) Mk[i].insert(node.i, node.distance);
       }
       return Mk;
     }
 
-    const cost_t
-    euclidean_sq(const vertex& v, const vertex& w) const
+    /**
+     * @brief calculate the squared Euclidean distance between two vertices.
+     * @param[in] v: the first vertex.
+     * @param[in] w: the second vertex.
+     * @return the squared Euclidean distance between two vertices.
+     */
+    const distance_t
+    sq_euclidean_dist(const vertex& v, const vertex& w) const
     {
       return std::pow(v.x-w.x,2)+std::pow(v.y-w.y,2)+std::pow(v.z-w.z,2);
     }
 
-    const cost_t
-    manhattan(const vertex& v, const vertex& w) const
+    /**
+     * @brief calculate the manhattan distance between two vertices.
+     * @param[in] v: the first vertex.
+     * @param[in] w: the second vertex.
+     * @return the manhattan distance between two vertices.
+     */
+    const distance_t
+    manhattan_dist(const vertex& v, const vertex& w) const
     {
       return std::abs(v.x-w.x)+std::abs(v.y-w.y)+std::abs(v.z-w.z);
     }
 
-    const cost_t
-    calc_cost(const node_t& i, const node_t& j) const
+    /**
+     * @brief calculate the distance between two nodes.
+     * @param[in] i: the node number of the first vertex.
+     * @param[in] j: the node number of the second vertex.
+     * @return the squared Euclidean distance between two nodes.
+     */
+    const distance_t
+    calc_distance(const node_t& i, const node_t& j) const
     {
-      return euclidean_sq(V[i], V[j]);
+      return sq_euclidean_dist(V[i], V[j]);
     }
 
-    const size_t n_vertices;
-    const size_t graph_size;
-    vertices V;
-    kNNGraph Bk;
+    const size_t n_vertices; /** the number of the vertices. */
+    const size_t graph_size; /** the maximum size of the node containers. */
+    vertices V;              /** the container of the vertices. */
+    kNNGraph Bk;             /** the k-NN graph container. */
   };
 }
 
