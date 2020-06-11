@@ -8,7 +8,7 @@ HEADER := src/minimalKNN.h
 SOURCE := $(wildcard src/*.cc)
 OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
 
-.PHONY: clean build build_pypi upload_test upload_pypi
+.PHONY: clean build test build_pypi upload_test upload_pypi
 
 all: test/sample_box
 
@@ -20,6 +20,9 @@ test/sample_%: test/sample_%.cc $(OBJECT) $(HEADER)
 
 build:
 	python setup.py build_ext --inplace
+
+test: build
+	python -c 'import minimalKNN as m; m.simple_solver_test()'
 
 build_pypi:
 	python setup.py sdist bdist_wheel -p manylinux1_x86_64
