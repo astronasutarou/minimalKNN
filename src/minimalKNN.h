@@ -193,16 +193,28 @@ namespace minimalKNN {
   };
 
 
+  /** a default value for the maximum size of the node containsers. */
+  constexpr size_t default_kNN_graph_size = 10;
+  /** the maximum number of iterations in the optimization. */
+  constexpr size_t kNN_max_iter = 15;
+
   class kNNBuilder {
   public:
     /**
-     * @brief construct a _kNNBuilder_.
-     * @param[in] k: the maximum size of the node containers.
+     * @brief construct a _kNNBuilder_ with `default_kNN_graph_size`.
      * @param[in] v: a list of the given vertices.
+     */
+    kNNBuilder(const vertices v) : kNNBuilder(v, default_kNN_graph_size)
+    {}
+
+    /**
+     * @brief construct a _kNNBuilder_.
+     * @param[in] v: a list of the given vertices.
+     * @param[in] k: the maximum size of the node containers.
      * @note The graph construction will fail when the `k` value is too small.
      *       The `k` is conventionally set between 10--20.
      */
-    kNNBuilder(const size_t k, const vertices v)
+    kNNBuilder(const vertices v, const size_t k)
       : n_vertices(v.size()), graph_size((k<n_vertices)?k:n_vertices), V(v)
     {
       // Initialization Procedure
@@ -222,12 +234,11 @@ namespace minimalKNN {
 
       // Optimization Loop
       //   kNNBuilder will give up the optimization procedure after the
-      //   `max_iter` iterations. Currently, no exception is raised.
+      //   `kNN_max_iter` iterations. Currently, no exception is raised.
       //   The k-NN graph remains at the last iteration. In usual cases,
       //   the k-NN graph will converge within a few iterations.
-      constexpr size_t max_iter = 15;
       size_t updated(0);
-      for (size_t c=0; c<max_iter; c++) {
+      for (size_t c=0; c<kNN_max_iter; c++) {
         kNNGraph Rk = reverse(Bk);
         kNNGraph Mk = merge(Bk, Rk);
         for (size_t i=0; i<n_vertices; i++) {
@@ -284,6 +295,17 @@ namespace minimalKNN {
         printf("%8.4f %8.4f %8.4f\n", V[g.v].x, V[g.v].y, V[g.v].z);
       }
       printf("# graph size: %ld\n", G.size());
+    }
+
+
+    /**
+     * @brief return a list of the imported vertices.
+     * @return a list ov the vertices.
+     */
+    const vertices
+    get_vertices() const
+    {
+      return V;
     }
 
     /**
