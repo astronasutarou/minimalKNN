@@ -17,7 +17,7 @@ main(int argn, char** argv)
   std::uniform_real_distribution<double> loc(-10.0, 10.0);
 
   minimalKNN::vertices V;
-  for (size_t i=1; i<2000; i++) {
+  for (size_t i=1; i<1500; i++) {
     const double x = loc(gen);
     const double y = loc(gen);
     const double z = loc(gen);
@@ -25,7 +25,7 @@ main(int argn, char** argv)
   }
 
   clock_t t0 = clock();
-  minimalKNN::kNNBuilder kNN(10, V);
+  minimalKNN::kNNBuilder kNN(V);
   clock_t t1 = clock();
   kNN.print_vertices();
   printf("\n\n");
