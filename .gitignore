@@ -1,0 +1,12 @@
+MANIFEST
+build/
+dist/
+*.egg-info/
+
+*.so
+*.o
+*.pyc
+*.png
+
+/fdlsgm.c
+/fdlsgm.cpp
