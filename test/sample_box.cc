@@ -27,9 +27,9 @@ main(int argn, char** argv)
   clock_t t0 = clock();
   minimalKNN::kNNBuilder kNN(10, V);
   clock_t t1 = clock();
-  kNN.show_vertices();
+  kNN.print_vertices();
   printf("\n\n");
-  kNN.neighbor_graph(1);
+  kNN.print_nng(1);
   printf("# elapsed time: %lf\n", (double)(t1-t0)/CLOCKS_PER_SEC);
   return 0;
 }
