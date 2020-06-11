@@ -10,4 +10,4 @@ The library is written in _C++11_ and do not depends on any library outside of t
 
 
 ## References
-[^DML2011]: Wei Dong, Charikar Moses, &amp; Kai Li, WWW'11: Proceedings of the 20th international conference on World wide web (2011), 577&ndash;586 (doi: [10.1145/1963405.1963487](https://doi.org/doi/10.1145/1963405.1963487 "Dong, Moses, & Li (2011)"))
+[^DML2011]: Wei Dong, Charikar Moses, & Kai Li, WWW'11: Proceedings of the 20th international conference on World wide web (2011), 577--586 (doi: [10.1145/1963405.1963487](https://doi.org/10.1145/1963405.1963487 "Dong, Moses, & Li (2011)"))
