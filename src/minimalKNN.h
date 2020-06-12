@@ -24,7 +24,7 @@ namespace minimalKNN {
   /** a constructor of k-Nearest Neighbor Graph. */
   class kNNBuilder;
 
-  /** a vertex in a three-dimensional Euclidean space. */
+  /** a vertex in a three-dimensional space. */
   typedef struct vertex {
     double x;
     double y;
@@ -66,6 +66,33 @@ namespace minimalKNN {
 
   /** a container of a k-Nearest Neighbor Graph. */
   typedef std::vector<kNNSet> kNNGraph;
+
+  /** a function to calculate the distance between vertices */
+  typedef std::function<distance_t(const vertex&,const vertex&)> metric;
+
+  /**
+   * @brief calculate the squared Euclidean distance between two vertices.
+   * @param[in] v: the first vertex.
+   * @param[in] w: the second vertex.
+   * @return the squared Euclidean distance between two vertices.
+   */
+  const distance_t
+  sq_euclidean_dist(const vertex& v, const vertex& w)
+  {
+    return std::pow(v.x-w.x,2)+std::pow(v.y-w.y,2)+std::pow(v.z-w.z,2);
+  }
+
+  /**
+   * @brief calculate the manhattan distance between two vertices.
+   * @param[in] v: the first vertex.
+   * @param[in] w: the second vertex.
+   * @return the manhattan distance between two vertices.
+   */
+  const distance_t
+  manhattan_dist(const vertex& v, const vertex& w)
+  {
+    return std::abs(v.x-w.x)+std::abs(v.y-w.y)+std::abs(v.z-w.z);
+  }
 
   class kNNSet {
   public:
@@ -215,7 +242,20 @@ namespace minimalKNN {
      *       The `k` is conventionally set between 10--20.
      */
     kNNBuilder(const vertices v, const size_t k)
-      : n_vertices(v.size()), graph_size((k<n_vertices)?k:n_vertices), V(v)
+      : kNNBuilder(v, k, sq_euclidean_dist)
+    {}
+
+    /**
+     * @brief construct a _kNNBuilder_.
+     * @param[in] v: a list of the given vertices.
+     * @param[in] k: the maximum size of the node containers.
+     * @param[in] m: the function to measure the distance between vertices.
+     * @note The graph construction will fail when the `k` value is too small.
+     *       The `k` is conventionally set between 10--20.
+     */
+        kNNBuilder(const vertices v, const size_t k, const metric m)
+      : n_vertices(v.size()), graph_size((k<n_vertices)?k:n_vertices),
+        f_metric(m), V(v)
     {
       // Initialization Procedure
       //   The k-NN graph is initialized with randomly selected nodes.
@@ -400,43 +440,20 @@ namespace minimalKNN {
     }
 
     /**
-     * @brief calculate the squared Euclidean distance between two vertices.
-     * @param[in] v: the first vertex.
-     * @param[in] w: the second vertex.
-     * @return the squared Euclidean distance between two vertices.
-     */
-    const distance_t
-    sq_euclidean_dist(const vertex& v, const vertex& w) const
-    {
-      return std::pow(v.x-w.x,2)+std::pow(v.y-w.y,2)+std::pow(v.z-w.z,2);
-    }
-
-    /**
-     * @brief calculate the manhattan distance between two vertices.
-     * @param[in] v: the first vertex.
-     * @param[in] w: the second vertex.
-     * @return the manhattan distance between two vertices.
-     */
-    const distance_t
-    manhattan_dist(const vertex& v, const vertex& w) const
-    {
-      return std::abs(v.x-w.x)+std::abs(v.y-w.y)+std::abs(v.z-w.z);
-    }
-
-    /**
      * @brief calculate the distance between two nodes.
      * @param[in] i: the node number of the first vertex.
      * @param[in] j: the node number of the second vertex.
-     * @return the squared Euclidean distance between two nodes.
+     * @return the distance between two nodes.
      */
     const distance_t
-    calc_distance(const node_t& i, const node_t& j) const
+    calc_distance(const node_t& i, const node_t& j)
     {
-      return sq_euclidean_dist(V[i], V[j]);
+      return f_metric(V[i], V[j]);
     }
 
     const size_t n_vertices; /** the number of the vertices. */
     const size_t graph_size; /** the maximum size of the node containers. */
+    const metric f_metric;   /** the function to measure the distance. */
     vertices V;              /** the container of the vertices. */
     kNNGraph Bk;             /** the k-NN graph container. */
   };
