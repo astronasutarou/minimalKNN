@@ -6,7 +6,7 @@ This package will provide a function to construct an approximated k-Nearest Neig
 
 
 ## Dependencies
-The library is written in _C++11_ and do not depends on any library outside of the `STL`. The Python interface is depends on `NumPy`. The library is developed on `g++` version 5.4 installed in Linux Mint 18.1 (serena). The Python interface is developed on Python 3.7.1 and Numpy 1.18.1.
+The library is written in _C++11_ and do not depends on any library outside of the `STL`. The Python interface is depends on `NumPy`, and functional test procedures depend on `Matplotlib`. The library is developed on `g++` version 5.4 installed in Linux Mint 18.1 (serena). The Python interface is developed on Python 3.7.1 and Numpy 1.18.1.
 
 
 ## References

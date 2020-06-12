@@ -77,5 +77,5 @@ if __name__ == '__main__':
     url='https://bitbucket.org/ryou_ohsawa/minimalKNN/src/master/',
     license=license,
     classifiers=classifiers,
-    install_requires=['numpy',],
+    install_requires=['numpy','matplotlib',],
     ext_modules=extensions)
