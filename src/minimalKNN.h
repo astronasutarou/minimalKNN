@@ -239,7 +239,7 @@ namespace minimalKNN {
       //   the k-NN graph will converge within a few iterations.
       size_t updated(0);
       for (size_t c=0; c<kNN_max_iter; c++) {
-        kNNGraph Rk = reverse(Bk);
+        kNNGraph Rk = reversed_graph();
         kNNGraph Mk = merge(Bk, Rk);
         for (size_t i=0; i<n_vertices; i++) {
           for (auto& v: Mk[i]) {
@@ -258,47 +258,6 @@ namespace minimalKNN {
 
 
     /**
-     * @brief display the vertices.
-     */
-    const void
-    print_vertices() const
-    {
-      for (size_t i=0; i<n_vertices; i++)
-        printf("%8.4f %8.4f %8.4f\n", V[i].x, V[i].y, V[i].z);
-    }
-
-    /**
-     * @brief display the k-Nearest Neighbor Graph.
-     * @note This displays a compressed representation of the k-NN graph.
-     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
-     *       The graph is non-directional. Every vertex should be connected
-     *       with `graph_size` edges.
-     */
-    const void
-    print_nng() const
-    { print_nng(graph_size); }
-
-    /**
-     * @brief display the k-Nearest Neighbor Graph.
-     * @param[in] n_neibors: the number of edges per vertex.
-     * @note This displays a compressed representation of the k-NN graph.
-     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
-     *       The graph is non-directional. Every vertex should be connected
-     *       with `n_neibors` edges.
-     */
-    const void
-    print_nng(const size_t n_neibors) const
-    {
-      graph G = neighbor_graph(n_neibors);
-      for (auto& g: G) {
-        printf("%8.4f %8.4f %8.4f  ", V[g.u].x, V[g.u].y, V[g.u].z);
-        printf("%8.4f %8.4f %8.4f\n", V[g.v].x, V[g.v].y, V[g.v].z);
-      }
-      printf("# graph size: %ld\n", G.size());
-    }
-
-
-    /**
      * @brief return a list of the imported vertices.
      * @return a list ov the vertices.
      */
@@ -309,6 +268,17 @@ namespace minimalKNN {
     }
 
     /**
+     * @brief display the vertices.
+     */
+    const void
+    print_vertices() const
+    {
+      for (size_t i=0; i<n_vertices; i++)
+        printf("%8.4f %8.4f %8.4f\n", V[i].x, V[i].y, V[i].z);
+    }
+
+
+    /**
      * @brief construct the k-Nearest Neighbor Graph.
      * @return A graph contains the k-Narest Neighbor Graph.
      * @note This displays a compressed representation of the k-NN graph.
@@ -317,8 +287,8 @@ namespace minimalKNN {
      *       with `graph_size` edges.
      */
     const graph
-    neighbor_graph() const
-    { return neighbor_graph(graph_size); }
+    compressed_graph() const
+    { return compressed_graph(graph_size); }
 
     /**
      * @brief construct the k-Nearest Neighbor Graph.
@@ -330,7 +300,7 @@ namespace minimalKNN {
      *       with `n_neibors` edges.
      */
     const graph
-    neighbor_graph(const size_t n_neibors) const
+    compressed_graph(const size_t n_neibors) const
     {
       graph G;
       for (size_t i=0; i<n_vertices; i++) {
@@ -346,30 +316,69 @@ namespace minimalKNN {
       return G;
     }
 
-  private:
+    /**
+     * @brief display the k-Nearest Neighbor Graph in a compressed form.
+     * @note This displays a compressed representation of the k-NN graph.
+     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
+     *       The graph is non-directional. Every vertex should be connected
+     *       with `graph_size` edges.
+     */
+    const void
+    print_nng() const
+    { print_nng(graph_size); }
+
+    /**
+     * @brief display the k-Nearest Neighbor Graph in a compressed form.
+     * @param[in] n_neibors: the number of edges per vertex.
+     * @note This displays a compressed representation of the k-NN graph.
+     *       Each line corresponds to an edge (x1,y1,z1,x2,y2,z2).
+     *       The graph is non-directional. Every vertex should be connected
+     *       with `n_neibors` edges.
+     */
+    const void
+    print_nng(const size_t n_neibors) const
+    {
+      graph G = compressed_graph(n_neibors);
+      for (auto& g: G) {
+        printf("%8.4f %8.4f %8.4f  ", V[g.u].x, V[g.u].y, V[g.u].z);
+        printf("%8.4f %8.4f %8.4f\n", V[g.v].x, V[g.v].y, V[g.v].z);
+      }
+      printf("# graph size: %ld\n", G.size());
+    }
+
+
+    /**
+     * @brief return a k-Nearest Neighbor graph.
+     * @return a full k-NN graph.
+     */
+    const kNNGraph&
+    neighbor_graph() const
+    {
+      return Bk;
+    }
+
     /**
      * @brief construct a reversed k-NN graph.
-     * @param[in] Gk: a k-NN graph to be reversed.
      * @return a reversed k-NN graph.
      * @note A k-NN graph `Gk[v]` contains the k-nearest neighbors from the
      *       vertex `v`. The reversed k-NN graph `Rk[v]` contains the nodes
      *       whose nearest neighbors contain the vertex `v`.
      */
     const kNNGraph
-    reverse(kNNGraph& Gk) const
+    reversed_graph() const
     {
       kNNGraph Rk;
       for (size_t i=0; i<n_vertices; i++)
         Rk.push_back(kNNSet());
       for (size_t i=0; i<n_vertices; i++) {
-        for (auto& node: Gk[i]) {
+        for (auto& node: Bk[i]) {
           Rk[node.i].insert(i, node.distance);
         }
       }
       return Rk;
     }
 
-
+  private:
     /**
      * @brief construct a merged k-NN graph.
      * @param[in] Fk: a k-NN graph to be merged.
