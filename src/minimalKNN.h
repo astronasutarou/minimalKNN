@@ -131,6 +131,15 @@ namespace minimalKNN {
     {}
 
     /**
+     * @brief a substitute operator of _kNNSet_.
+     * @param[in] obj: a _kNNSet_ object to be substituted.
+     * @note this function is requried for the Cython interpreter.
+     */
+    const kNNSet&
+    operator=(const kNNSet& obj)
+    { return obj; }
+
+    /**
      * @brief insert a node into a container with a distance.
      * @param[in] node: the nubmber of the node to be inserted.
      * @param[in] distance: the distance to the node to be inserted.
