@@ -33,6 +33,7 @@ cdef extern from 'minimalKNN.h' namespace 'minimalKNN':
   cdef cppclass kNNSet:
     kNNSet()
     kNNSet(const int)
+    const kNNSet operator=(const kNNSet)
     const node_list neighbors() const
 
   ctypedef vec[kNNSet] kNNGraph
@@ -54,14 +55,37 @@ cdef extern from *:
 
 def generate_graph(
     ndarray pool, int graph_size = 10):
+  ''' Construct k-Nearest Neighbor Graph.
+
+  Construct an approximated k-Nearest Neighbor of the given set of points in
+  a 3D Euclidean space using the NN-descent algorithm. The points are given
+  by `pool`, which should be a `numpy.ndarray` object with the shape of
+  (N, 3), where N is the number of the points. `graph_size` is an internal
+  parameter in constructing the k-NN graph, which controls the size of node
+  containers in _kNNBuilder_. When `graph_size` is too small, the NN-descent
+  will fail. The default value of `graph_size` is, tentatively, set to 10.
+
+  Parameters:
+    pool (ndarray): (N,3) array, a list of vertices in a 3D Euclidean space.
+    graph_size (int): the size of in `kNNBuilder`.
+
+  Return:
+    Bk (list): a k-Nearest Neighbor Graph.
+    Rk (list): a reversed k-Nearest Neighbor Graph.
+  '''
   cdef vertices V
-  # cdef kNNSet g
-  for v in pool: V.push_back(vertex(v[0], v[1], v[2]))
+  for v in pool:
+    V.push_back(vertex(v[0], v[1], v[2]))
   cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
   Bk,Rk = list(),list()
   cdef kNNGraph g = pkNN.neighbor_graph()
-  #for g in pkNN.neighbor_graph(): Bk.push([(e.u,e.v) for e in g.neighbors()])
-  #for g in pkNN.reversed_graph(): Rk.push([(e.u,e.v) for e in g.neighbors()])
+  cdef int i = 0, s = g.size()
+  for i in range(s):
+    Bk.append(list(g[i].neighbors()))
+  cdef kNNGraph h = pkNN.reversed_graph()
+  cdef int j = 0, t = g.size()
+  for j in range(t):
+    Rk.append(list(h[j].neighbors()))
   return Bk,Rk
 
 
@@ -87,7 +111,8 @@ def compressed_graph(
     A list of the edges of the k-Nearest Neighbor Graph.
   '''
   cdef vertices V
-  for v in pool: V.push_back(vertex(v[0], v[1], v[2]))
+  for v in pool:
+    V.push_back(vertex(v[0], v[1], v[2]))
   cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
   cdef graph g = pkNN.compressed_graph(n_neighbor)
   return [(e.u,e.v) for e in g]
