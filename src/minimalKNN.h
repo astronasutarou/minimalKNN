@@ -17,7 +17,7 @@
 
 
 namespace minimalKNN {
-  constexpr bool __debug__ = true;
+  constexpr bool __debug__ = false;
 
   /** a container to store k-Nearest Neigbors. */
   class kNNSet;
@@ -392,7 +392,8 @@ namespace minimalKNN {
         printf("%8.4f %8.4f %8.4f  ", V[g.u].x, V[g.u].y, V[g.u].z);
         printf("%8.4f %8.4f %8.4f\n", V[g.v].x, V[g.v].y, V[g.v].z);
       }
-      printf("# graph size: %ld\n", G.size());
+      if (__debug__)
+        printf("# graph size: %ld\n", G.size());
     }
 
 
