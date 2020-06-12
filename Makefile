@@ -22,7 +22,7 @@ build:
 	python setup.py build_ext --inplace
 
 test: build
-	python -c 'import minimalKNN as m; m.simple_solver_test()'
+	python -c 'import minimalKNN as m; m.simple_demo_box()'
 
 build_pypi:
 	python setup.py sdist bdist_wheel -p manylinux1_x86_64

@@ -29,49 +29,90 @@ cdef extern from 'minimalKNN.h' namespace 'minimalKNN':
   ## a unique set of edges.
   ctypedef cset[edge] graph
 
+  ## k-NN container
+  cdef cppclass kNNSet:
+    kNNSet()
+    kNNSet(const int)
+    const node_list neighbors() const
+
+  ctypedef vec[kNNSet] kNNGraph
+
   ## k-NN builder
   cdef cppclass kNNBuilder:
-    ##kNNBuilder()
     kNNBuilder(const vertices, const int)
     const void print_vertices() const
     const void print_nng(const int) const
     const vertices get_vertices() const
-    const graph neighbor_graph(const int) const
+    const graph compressed_graph(const int) const
+    const kNNGraph neighbor_graph() const
+    const kNNGraph reversed_graph() const
 
 
 cdef extern from *:
   pass
 
 
-def construct_kNN(ndarray pool, int graph_size = 10):
+def generate_graph(
+    ndarray pool, int graph_size = 10):
+  cdef vertices V
+  # cdef kNNSet g
+  for v in pool: V.push_back(vertex(v[0], v[1], v[2]))
+  cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
+  Bk,Rk = list(),list()
+  cdef kNNGraph g = pkNN.neighbor_graph()
+  #for g in pkNN.neighbor_graph(): Bk.push([(e.u,e.v) for e in g.neighbors()])
+  #for g in pkNN.reversed_graph(): Rk.push([(e.u,e.v) for e in g.neighbors()])
+  return Bk,Rk
+
+
+def compressed_graph(
+    ndarray pool, int n_neighbor, int graph_size = 10):
+  ''' Construct a compressed form of a k-Nearest Neighbor Graph.
+
+  Construct an approximated k-Nearest Neighbor of the given set of points in
+  a 3D Euclidean space using the NN-descent algorithm. The points are given
+  by `pool`, which should be a `numpy.ndarray` object with the shape of
+  (N, 3), where N is the number of the points. The number of edges per vertex
+  is specified by `n_neighbor`. `graph_size` is an internal parameter in
+  constructing the k-NN graph, which controls the size of node containers
+  in _kNNBuilder_. When `graph_size` is too small, the NN-descent will fail.
+  The default value of `graph_size` is, tentatively, set to 10.
+
+  Parameters:
+    pool (ndarray): (N,3) array, a list of vertices in a 3D Euclidean space.
+    n_neighbor (int): the number of elements composing a line segment.
+    graph_size (int): the size of in `kNNBuilder`.
+
+  Return:
+    A list of the edges of the k-Nearest Neighbor Graph.
+  '''
   cdef vertices V
   for v in pool: V.push_back(vertex(v[0], v[1], v[2]))
   cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
-  cdef graph g = pkNN.neighbor_graph(1)
+  cdef graph g = pkNN.compressed_graph(n_neighbor)
   return [(e.u,e.v) for e in g]
 
 
-def simple_solver_test(int n_size=200, int n_neighbor=1,
-                       int graph_size=10):
-  ''' Functional test with a simple situation.
+def simple_demo_box(
+    int n_size=200, int n_neighbor=1, int graph_size=10):
+  ''' Demo with vertices randomly distributed in a box.
 
-  Put `group` line segments composed of `frame` elementary segments in the
-  2000 x 2000 x 2000 space. The loci, lengths, and directions of the line
-  segments are randomly selected. The line segments are slightly affected
-  by disturbance. The degree of the disturbance is given by `scatter`.
-  Additionally, `jammer` obstacle segments are appended.
+  Randomly put `vertex` elements in a (-1,1) x (-1,1) x (-1,1) space.
+  Construct an approximated k-Nearest Neighbor Graph using NN-descent
+  algorithm with the Euclidean metric. The number of vertices is given
+  by `n_size`. The number of edges per vertex is given by `n_neighbor`.
+  `graph_size` is an internal parameter in constructing the k-NN graph,
+  which controls the size of node containers in _kNNBuilder_.
 
-  This function calls the `solve` routine, which will search line segments
-  in the space. The function prints the starting and terminal points of the
-  all the elementary line segments, the starting and terminal points of the
-  detected line segments, the default search parameter, the number of the
-  detected line segments, and the elapsed time in milliseconds.
+  This demo function displays the generated vertices and the edges of the
+  constructed k-NN graph. They are dumped in the standard output. The result
+  is visualized in a Matplotlib window. The elapsed time for constructing
+  the k-NN graph is given in milliseconds.
 
   Parameters:
-    group (int): the number of line segments.
-    frame (int): the number of elements composing a line segment.
-    jammer (int): the number of obstacle segments.
-    scatter (double): the scatter of line segments.
+    n_size (int): the number of randomly generated vertices.
+    n_neighbor (int): the number of elements composing a line segment.
+    graph_size (int): the size of in `kNNBuilder`.
   '''
   from datetime import datetime
   t0 = datetime.now()
@@ -79,10 +120,14 @@ def simple_solver_test(int n_size=200, int n_neighbor=1,
   obj = np.random.uniform(-1,1,size=(n_size,3))
   for v in obj: V.push_back(vertex(v[0], v[1], v[2]))
   cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
-  cdef graph g = pkNN.neighbor_graph(n_neighbor)
+  cdef graph g = pkNN.compressed_graph(n_neighbor)
   t1 = datetime.now()
   print('# found {} segments'.format(g.size()))
   print('# elapsed time: {}ms'.format((t1-t0).total_seconds()*1e3))
+
+  pkNN.print_vertices()
+  print('\n')
+  pkNN.print_nng(n_neighbor)
 
   import matplotlib.pyplot as plt
   from mpl_toolkits.mplot3d import Axes3D
