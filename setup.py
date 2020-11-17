@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from glob import glob
-from setuptools import setup
-from distutils.extension import Extension
-from distutils.dist import Distribution
+from setuptools import setup, Extension
 import os,sys,re
 
 
 with open('README.md', 'r') as fd:
-  version = '0.3'
+  version = '0.4'
   author = 'Ryou Ohsawa'
   email = 'ohsawa@ioa.s.u-tokyo.ac.jp'
   description = 'MinimalKNN: minimal package to construct k-NN Graph'
@@ -49,7 +47,7 @@ if __name__ == '__main__':
   depends      = glob(os.path.join('src', '*.h'))
   libraries    = ['m',]
   include_dirs = [numpy.get_include(), 'src']
-  compile_args = ['-std=c++11']
+  compile_args = ['-std=c++11','-O2']
   extensions   = [
     Extension('minimalKNN',
               language='c++',
