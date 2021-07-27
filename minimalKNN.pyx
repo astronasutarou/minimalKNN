@@ -5,6 +5,7 @@ from libcpp.set cimport set as cset
 from libcpp.list cimport list as clist
 from numpy cimport ndarray
 import numpy as np
+import sys
 
 
 cdef extern from 'minimalKNN.h' namespace 'minimalKNN':
@@ -119,7 +120,57 @@ def compressed_graph(
 
 
 def simple_demo_box(
-    int n_size=200, int n_neighbor=1, int graph_size=10):
+    int n_size=50, int n_neighbor=1, int graph_size=10, int seed=42):
+  ''' Demo with vertices randomly distributed in a box.
+
+  Randomly put `vertex` elements in a (-1,1) x (-1,1) space. Construct
+  an approximated k-Nearest Neighbor Graph using NN-descent algorithm
+  with the Euclidean metric. The number of vertices is given by `n_size`.
+  The number of edges per vertex is given by `n_neighbor`. `graph_size`
+  is an internal parameter in constructing the k-NN graph, which controls
+  the size of node containers in _kNNBuilder_.
+
+  This demo function displays the generated vertices and the edges of the
+  constructed k-NN graph. They are dumped in the standard output. The result
+  is visualized in a Matplotlib window. The elapsed time for constructing
+  the k-NN graph is given in milliseconds.
+
+  Parameters:
+    n_size (int): the number of randomly generated vertices.
+    n_neighbor (int): the number of elements composing a line segment.
+    graph_size (int): the size of in `kNNBuilder`.
+  '''
+  from datetime import datetime
+  t0 = datetime.now()
+  cdef vertices V
+  np.random.seed(seed)
+  obj = np.random.uniform(-1,1,size=(n_size,2))
+  for v in obj: V.push_back(vertex(v[0], v[1], 0.0))
+  cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
+  cdef graph g = pkNN.compressed_graph(n_neighbor)
+  t1 = datetime.now()
+
+  pkNN.print_vertices()
+  print('\n')
+  pkNN.print_nng(n_neighbor)
+
+  dprint = lambda s: print(s, file=sys.stderr)
+  dprint('# found {} segments'.format(g.size()))
+  dprint('# elapsed time: {}ms'.format((t1-t0).total_seconds()*1e3))
+
+  import matplotlib.pyplot as plt
+  from matplotlib.collections import LineCollection as lc
+  fig = plt.figure(figsize=(8,8))
+  ax  = fig.add_subplot(111)
+  ax.scatter(obj[:,0],obj[:,1])
+  edges = lc([(obj[e.u,:2],obj[e.v,:2]) for e in g], color=(1,0,0,0.5))
+  ax.add_collection(edges)
+  fig.tight_layout()
+  plt.show()
+
+
+def simple_demo_box3d(
+    int n_size=200, int n_neighbor=1, int graph_size=10, int seed=42):
   ''' Demo with vertices randomly distributed in a box.
 
   Randomly put `vertex` elements in a (-1,1) x (-1,1) x (-1,1) space.
@@ -142,24 +193,28 @@ def simple_demo_box(
   from datetime import datetime
   t0 = datetime.now()
   cdef vertices V
+  np.random.seed(seed)
   obj = np.random.uniform(-1,1,size=(n_size,3))
   for v in obj: V.push_back(vertex(v[0], v[1], v[2]))
   cdef kNNBuilder* pkNN = new kNNBuilder(V, graph_size)
   cdef graph g = pkNN.compressed_graph(n_neighbor)
   t1 = datetime.now()
-  print('# found {} segments'.format(g.size()))
-  print('# elapsed time: {}ms'.format((t1-t0).total_seconds()*1e3))
 
   pkNN.print_vertices()
   print('\n')
   pkNN.print_nng(n_neighbor)
 
+  dprint = lambda s: print(s, file=sys.stderr)
+  dprint('# found {} segments'.format(g.size()))
+  dprint('# elapsed time: {}ms'.format((t1-t0).total_seconds()*1e3))
+
   import matplotlib.pyplot as plt
   from mpl_toolkits.mplot3d import Axes3D
   from mpl_toolkits.mplot3d.art3d import Line3DCollection as lc
-  fig = plt.figure()
+  fig = plt.figure(figsize=(8,8))
   ax  = fig.add_subplot(111, projection='3d')
   ax.scatter(obj[:,0],obj[:,1],obj[:,2])
   edges = lc([(obj[e.u,:],obj[e.v,:]) for e in g], color=(1,0,0,0.5))
   ax.add_collection(edges)
+  fig.tight_layout()
   plt.show()
