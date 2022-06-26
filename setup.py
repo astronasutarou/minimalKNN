@@ -2,16 +2,22 @@
 # -*- coding: utf-8 -*-
 from glob import glob
 from setuptools import setup, Extension
-import os,sys,re
+import os, sys, re
 
 
 with open('README.md', 'r') as fd:
-  version = '0.5'
+  version = '0.9'
   author = 'Ryou Ohsawa'
   email = 'ohsawa@ioa.s.u-tokyo.ac.jp'
   description = 'MinimalKNN: minimal package to construct k-NN Graph'
   long_description = fd.read()
   license = 'MIT'
+
+
+with open('requirements.txt', 'r') as fd:
+  requirements = []
+  for l in fd.readlines(): requirements.append(l.rstrip())
+
 
 classifiers = [
   'Development Status :: 3 - Alpha',
@@ -24,43 +30,26 @@ classifiers = [
   'Programming Language :: Python :: Implementation :: CPython',
   'Topic :: Scientific/Engineering :: Astronomy']
 
-if os.path.exists('minimalKNN.pyx'):
-  USE_CYTHON = True
-  filename   = 'minimalKNN.pyx'
-else:
-  USE_CYTHON = False
-  if os.path.exists('minimalKNN.cpp'):
-    filename   = 'minimalKNN.cpp'
-  elif os.path.exists('minimalKNN.cxx'):
-    filename   = 'minimalKNN.cxx'
-  elif os.path.exists('minimalKNN.cc'):
-    filename   = 'minimalKNN.cc'
-
 
 if __name__ == '__main__':
-  try:
-    import numpy
-  except ImportError:
-    raise SystemExit('NumPy is not available.')
+  from Cython.Distutils import build_ext
+  from Cython.Build import cythonize
+  import numpy
 
-  sources      = [filename] + glob(os.path.join('src', '*.cc'))
-  depends      = glob(os.path.join('src', '*.h'))
-  libraries    = ['m',]
-  include_dirs = [numpy.get_include(), 'src']
-  compile_args = ['-std=c++11','-O2']
   extensions   = [
-    Extension('minimalKNN',
-              language='c++',
-              sources=sources,
-              libraries=libraries,
-              include_dirs=include_dirs,
-              depends=depends,
-              extra_compile_args=compile_args)
-    ]
+    Extension(
+      'minimalKNN',
+      language           = 'c++',
+      sources            = ['minimalKNN.pyx'] + glob(os.path.join('src', '*.cc')),
+      libraries          = ['m',],
+      include_dirs       = [numpy.get_include(), 'src'],
+      depends            = glob(os.path.join('src', '*.h')),
+      extra_compile_args = ['-std=c++11','-O2'],
+    )
+  ]
 
-  if USE_CYTHON:
-    from Cython.Build import cythonize
-    extensions = cythonize(extensions, language_level=3)
+  extensions = cythonize(extensions, language_level=3)
+  cmdclass = {'build_ext': build_ext}
 
   setup(
     name='minimalKNN',
@@ -75,5 +64,6 @@ if __name__ == '__main__':
     url='https://bitbucket.org/ryou_ohsawa/minimalKNN/src/master/',
     license=license,
     classifiers=classifiers,
-    install_requires=['numpy','matplotlib',],
+    install_requires=requirements,
+    cmdclass=cmdclass,
     ext_modules=extensions)
