@@ -25,7 +25,7 @@ test: build
 	python -c 'import minimalKNN as m; m.simple_demo_box()'
 
 build_pypi: build
-	python setup.py sdist bdist_wheel -p manylinux1_x86_64
+	python -m build
 
 upload_test: build_pypi
 	twine upload --skip-existing $(TESTPY) dist/*

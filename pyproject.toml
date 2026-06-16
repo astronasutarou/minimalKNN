@@ -1,0 +1,41 @@
+[build-system]
+requires = [
+  "setuptools>=64",
+  "Cython>=0.29",
+  "numpy>=1.22",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minimalKNN"
+version = "0.9"
+description = "MinimalKNN: minimal package to construct k-NN Graph"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+  {name = "Ryou Ohsawa", email = "ohsawa@ioa.s.u-tokyo.ac.jp"},
+]
+maintainers = [
+  {name = "Ryou Ohsawa", email = "ohsawa@ioa.s.u-tokyo.ac.jp"},
+]
+dependencies = [
+  "numpy>=1.22",
+  "matplotlib>=3.5",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Astronomy",
+]
+
+[project.urls]
+Homepage = "https://bitbucket.org/ryou_ohsawa/minimalKNN/src/master/"
+
+[tool.setuptools]
+packages = []
+py-modules = []
