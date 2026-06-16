@@ -7,6 +7,7 @@ CXX    := $(CC) $(LIBS) $(CFLAGS)
 HEADER := src/minimalKNN.h
 SOURCE := $(wildcard src/*.cc)
 OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
+EGGDIR := minimalKNN.egg-info
 BUILD_DIR := build
 BUILD_LIB := $(BUILD_DIR)/lib
 BUILD_TEMP := $(BUILD_DIR)/temp
@@ -23,16 +24,14 @@ test/sample_%: test/sample_%.cc $(OBJECT) $(HEADER)
 	$(CXX) -o $@ -c $<
 
 build:
-	python setup.py build_ext --build-lib $(BUILD_LIB) --build-temp $(BUILD_TEMP)
+	python setup.py build_ext \
+		--build-lib $(BUILD_LIB) --build-temp $(BUILD_TEMP)
 
 build_pypi: build
 	python -m build --outdir $(DIST_DIR)
-
-upload_test: build_pypi
-	twine upload --skip-existing $(TESTPY) $(DIST_DIR)/*
 
 upload_pypi: build_pypi
 	twine upload --skip-existing $(DIST_DIR)/*
 
 clean:
-	rm -rf $(BUILD_DIR) $(OBJECT)
+	rm -rf $(BUILD_DIR) $(EGGDIR) $(OBJECT)
