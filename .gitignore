@@ -1,11 +1,8 @@
 MANIFEST
-build/
-dist/
-*.egg-info/
+/build/
 
 *.so
 *.o
 *.pyc
 *.png
-
-/minimalKNN.c*
+*.egg-info
