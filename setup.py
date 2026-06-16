@@ -22,7 +22,11 @@ def get_extensions():
         )
     ]
 
-    return cythonize(extensions, language_level=3)
+    return cythonize(
+        extensions,
+        build_dir=os.path.join('build', 'cython'),
+        language_level=3,
+    )
 
 
 setup(ext_modules=get_extensions())

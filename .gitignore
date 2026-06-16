@@ -1,7 +1,5 @@
 MANIFEST
 build/
-dist/
-*.egg-info/
 
 *.so
 *.o

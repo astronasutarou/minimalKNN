@@ -11,12 +11,13 @@ name = "minimalKNN"
 version = "0.9"
 description = "MinimalKNN: minimal package to construct k-NN Graph"
 readme = "README.md"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-  {name = "Ryou Ohsawa", email = "ohsawa@ioa.s.u-tokyo.ac.jp"},
+  {name = "Ryou Ohsawa", email = "ryou.ohsawa@nao.ac.jp"},
 ]
 maintainers = [
-  {name = "Ryou Ohsawa", email = "ohsawa@ioa.s.u-tokyo.ac.jp"},
+  {name = "Ryou Ohsawa", email = "ryou.ohsawa@nao.ac.jp"},
 ]
 dependencies = [
   "numpy>=1.22",
@@ -27,9 +28,16 @@ classifiers = [
   "Environment :: Console",
   "Intended Audience :: Science/Research",
   "Operating System :: POSIX :: Linux",
+  "Programming Language :: C++",
+  "Programming Language :: Cython",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Astronomy",
 ]
 
