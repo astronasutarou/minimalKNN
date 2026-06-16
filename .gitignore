@@ -5,3 +5,4 @@ MANIFEST
 *.o
 *.pyc
 *.png
+*.egg-info
