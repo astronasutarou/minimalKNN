@@ -27,17 +27,5 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install build frontend
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
-
-      - name: Build source and wheel distributions
-        run: python -m build
-
-      - name: Install built wheel
-        run: python -m pip install dist/*.whl
-
-      - name: Check import
-        working-directory: /tmp
-        run: python -c "import minimalKNN; print(minimalKNN.__file__)"
+      - name: Build package
+        uses: ./.github/actions/build
