@@ -5,7 +5,7 @@ on:
 
 jobs:
   publish:
-    name: Publish to TestPyPI
+    name: Publish to test.PyPI
     runs-on: ubuntu-latest
     environment: release
 
