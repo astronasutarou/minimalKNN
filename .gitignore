@@ -5,5 +5,3 @@ MANIFEST
 *.o
 *.pyc
 *.png
-
-/minimalKNN.c*

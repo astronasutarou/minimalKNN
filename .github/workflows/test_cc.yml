@@ -1,0 +1,20 @@
+name: test_cc
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test_cc:
+    name: Build and run sample_box.cc
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Build sample_box.cc
+        run: make test/sample_box
+
+      - name: Run sample_box
+        run: ./test/sample_box > /tmp/sample_box_output.txt
