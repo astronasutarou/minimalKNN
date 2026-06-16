@@ -13,7 +13,7 @@ BUILD_LIB := $(BUILD_DIR)/lib
 BUILD_TEMP := $(BUILD_DIR)/temp
 DIST_DIR := $(BUILD_DIR)/dist
 
-.PHONY: clean build build_pypi upload_test upload_pypi
+.PHONY: clean build build_pypi upload_pypi
 
 all: test/sample_box
 
