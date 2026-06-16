@@ -34,7 +34,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://bitbucket.org/ryou_ohsawa/minimalKNN/src/master/"
+Homepage = "https://github.com/astronasutarou/minimalKNN"
 
 [tool.setuptools]
 packages = []
