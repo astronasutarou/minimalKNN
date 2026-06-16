@@ -1,4 +1,4 @@
-name: PyPI
+name: upload to PyPI
 
 on:
   workflow_dispatch:
