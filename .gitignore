@@ -1,8 +1,8 @@
-MANIFEST
-/build/
+/build
+/dist
+/*.egg-info
 
 *.so
 *.o
 *.pyc
 *.png
-*.egg-info
