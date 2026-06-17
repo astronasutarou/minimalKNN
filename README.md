@@ -1,5 +1,10 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build](https://github.com/astronasutarou/minimalKNN/actions/workflows/build.yml/badge.svg)](https://github.com/astronasutarou/minimalKNN/actions/workflows/build.yml)
+[![CodeQL](https://github.com/astronasutarou/minimalKNN/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/astronasutarou/minimalKNN/actions/workflows/github-code-scanning/codeql)
+[![PyPI](https://github.com/astronasutarou/minimalKNN/actions/workflows/upload_pypi.yml/badge.svg)](https://github.com/astronasutarou/minimalKNN/actions/workflows/upload_pypi.yml)
+
 # A Minimal k-Nearest Neighbor Graph Construction Library
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 
 ## Overview
 This package will provide a function to construct an approximated k-Nearest Neighbor graph from a list of three dimensional points. The graph construction algorithm is based on _NN-descent_ presented in Dong, Moses, & Li (2011)[^DML2011]. The Euclidean and Manhattan metrics are implemented in the current version, while only the Euclidean one is available in Python. The algorithm efficiently constructs an approximated k-Nearest Neighbor graph. This provides a portable _C++11_ header and a Python interface.
