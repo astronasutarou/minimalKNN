@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "minimalKNN"
-version = "0.9"
+version = "0.10"
 description = "MinimalKNN: minimal package to construct k-NN Graph"
 readme = "README.md"
 requires-python = ">=3.9"
